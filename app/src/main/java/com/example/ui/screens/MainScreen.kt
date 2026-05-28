@@ -129,8 +129,9 @@ fun MainScreen(
                     Text(
                         text = "Strategic Bulletins History",
                         style = MaterialTheme.typography.titleMedium,
+                        fontFamily = FontFamily.Serif,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White,
+                        color = TextPrimary,
                         modifier = Modifier.padding(vertical = 4.dp)
                     )
 
@@ -200,7 +201,7 @@ fun MainScreen(
                     ) {
                         Icon(Icons.Default.DeleteSweep, contentDescription = "Clear all", tint = CyberRed)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(text = "Erase Bulletins Vault", color = Color.White)
+                        Text(text = "Erase Bulletins Vault", color = TextPrimary)
                     }
                 }
             }
@@ -233,17 +234,19 @@ fun MainScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "PROJECT NEXUS",
+                                    text = "Executive Dossier",
                                     style = MaterialTheme.typography.titleMedium,
+                                    fontFamily = FontFamily.Serif,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White,
+                                    color = TextPrimary,
                                     letterSpacing = 1.sp
                                 )
                                 Text(
-                                    text = "Automated Board of Directors",
+                                    text = "PROJECT NEXUS",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = CyberBlue,
-                                    fontWeight = FontWeight.Medium
+                                    fontWeight = FontWeight.Bold,
+                                    letterSpacing = 1.5.sp
                                 )
                             }
                         }
@@ -295,7 +298,7 @@ fun MainScreen(
                     },
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = CarbonDark,
-                        titleContentColor = Color.White
+                        titleContentColor = TextPrimary
                     )
                 )
             },
@@ -610,7 +613,7 @@ fun StrategicConsoleInput(
                 focusedContainerColor = SlateSurface,
                 unfocusedContainerColor = SlateSurface,
                 disabledContainerColor = SlateSurface,
-                focusedTextColor = Color.White,
+                focusedTextColor = TextPrimary,
                 unfocusedTextColor = TextPrimary,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
@@ -891,8 +894,9 @@ fun DynamicProcessingLiveVisualizer(orchestratorState: OrchestratorState) {
             Text(
                 text = "BOARDROOM SYNTHESIS IN PROGRESS",
                 style = MaterialTheme.typography.titleSmall,
+                fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = TextPrimary
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
@@ -925,8 +929,9 @@ fun InteractiveBoardroomEmptyStatePlaceholders() {
             Text(
                 text = "Dossier Engine Ready",
                 style = MaterialTheme.typography.titleMedium,
+                fontFamily = FontFamily.Serif,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = TextPrimary
             )
             Spacer(modifier = Modifier.height(6.dp))
             Text(
@@ -954,7 +959,7 @@ fun ExecutiveRulingHeaderCard(
 
     val decisionIcon = when (dossier.dossier.arbitrationDecision) {
         "APPROVED" -> Icons.Default.CheckCircle
-        "COMPROMISE_REQUIRED", "RISKY_PIVOT" -> Icons.Default.WarningAmbassador
+        "COMPROMISE_REQUIRED", "RISKY_PIVOT" -> Icons.Default.Warning
         else -> Icons.Default.Cancel
     }
 
@@ -1013,8 +1018,9 @@ fun ExecutiveRulingHeaderCard(
                 Text(
                     text = dossier.dossier.rulingTitle,
                     style = MaterialTheme.typography.headlineSmall,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
+                    fontFamily = FontFamily.Serif,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
                 )
             }
 
@@ -1040,7 +1046,7 @@ fun ExecutiveRulingHeaderCard(
             val parts = text.split("**")
             parts.forEachIndexed { index, part ->
                 if (index % 2 == 1) {
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = Color.White)) {
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold, color = CyberBlue)) {
                         append(part)
                     }
                 } else {
@@ -1083,9 +1089,7 @@ fun ExecutiveRulingHeaderCard(
     }
 }
 
-// Icons.Default extension declarations to guarantee build safety
-private val Icons.Default.WarningAmbassador: ImageVector
-    get() = Icons.Default.Warning
+// Icons extension declarations to guarantee build safety
 private val Icons.Outlined.HistoryToggleOff: ImageVector
     get() = Icons.Default.History
 
@@ -1217,7 +1221,7 @@ fun SpecialistReportDetail(
                         text = report.agentName,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = TextPrimary
                     )
                     Text(
                         text = "Expert Specialist Domain: ${report.domain}",
@@ -1513,7 +1517,7 @@ fun HistoryDocketCard(
                     text = dossier.dossier.queryText,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White,
+                    color = TextPrimary,
                     maxLines = 1,
                     modifier = Modifier.padding(bottom = 2.dp)
                 )
@@ -1594,8 +1598,9 @@ fun CitationLineageInspectorDialog(
                             Text(
                                 text = "CITATION LINEAGE INSPECTOR",
                                 style = MaterialTheme.typography.titleSmall,
+                                fontFamily = FontFamily.Serif,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = TextPrimary
                             )
                             Text(
                                 text = "Strict verification audit checklist passed",
@@ -1638,7 +1643,7 @@ fun CitationLineageInspectorDialog(
                         text = citation.sourceName,
                         style = MaterialTheme.typography.bodyMedium,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = TextPrimary
                     )
                 }
 
