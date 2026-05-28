@@ -1,5 +1,5 @@
 {
-  "name": "Project Nexus",
+  "name": "Project Nexus V2",
   "description": "Agentic RAG Rulings for Enterprise Expertise. A multi-agent boardroom orchestrator with verifiable citation lineage.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

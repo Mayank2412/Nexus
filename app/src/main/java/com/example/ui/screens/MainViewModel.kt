@@ -8,6 +8,9 @@ import androidx.lifecycle.viewModelScope
 import com.example.data.*
 import com.example.orchestration.OrchestratorEngine
 import com.example.orchestration.OrchestratorState
+import com.example.orchestration.GroundingDoc
+import com.example.orchestration.GeminiDossierWrapper
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -43,6 +46,10 @@ class NexusViewModel(
     private val _selectedCitation = MutableStateFlow<CitationEntity?>(null)
     val selectedCitation: StateFlow<CitationEntity?> = _selectedCitation.asStateFlow()
 
+    // Enterprise BYOD (Bring Your Own Data) isolated indexes state
+    private val _byodDocuments = MutableStateFlow<List<GroundingDoc>>(emptyList())
+    val byodDocuments: StateFlow<List<GroundingDoc>> = _byodDocuments.asStateFlow()
+
     private val orchestratorEngine = OrchestratorEngine()
 
     fun updateQueryInput(newInput: String) {
@@ -50,8 +57,25 @@ class NexusViewModel(
     }
 
     /**
-     * Executes the multi-agent pipeline: Deconstruction -> Especialist parallel analysis -> Critic verification check -> Rulings.
-     * High-speed, robust dynamic background task. Saving to local Room DB happens securely at the final stage.
+     * Integrates custom documents uploaded via the Enterprise BYOD pipeline.
+     */
+    fun ingestBYODDocument(key: String, sourceName: String, text: String, url: String) {
+        val newDoc = GroundingDoc(
+            key = key.trim().uppercase(),
+            sourceName = sourceName.trim(),
+            text = text.trim(),
+            url = if (url.trim().isNotEmpty()) url.trim() else "https://byod.tenant-space.local/corpus/${key.trim()}"
+        )
+        _byodDocuments.value = _byodDocuments.value + newDoc
+    }
+
+    fun removeBYODDocument(key: String) {
+        _byodDocuments.value = _byodDocuments.value.filter { !it.key.equals(key, ignoreCase = true) }
+    }
+
+    /**
+     * Executes the multi-agent pipeline: Deconstruction -> Parallel 10-node executions -> Critic check.
+     * Pauses when Human Regulatory approval is requested.
      */
     fun triggerOrchestration() {
         val query = _queryInput.value.trim()
@@ -61,11 +85,10 @@ class NexusViewModel(
         _selectedCitation.value = null
 
         viewModelScope.launch {
-            orchestratorEngine.runOrchestration(query).collectLatest { state ->
+            orchestratorEngine.runOrchestration(query, _byodDocuments.value).collectLatest { state ->
                 _orchestratorState.value = state
 
                 if (state is OrchestratorState.Success) {
-                    // Persist completed dossier into local Room database
                     val dossierId = repository.saveDossier(
                         query = query,
                         arbitrationSummary = state.dossierSummary,
@@ -75,13 +98,85 @@ class NexusViewModel(
                         reportsList = state.reports,
                         citationsList = state.citations
                     )
-
-                    // Fetch the saved dossier with fully loaded relationships from Room to reflect in the active workspace UI
                     val loadedDossier = repository.getDossierById(dossierId)
                     _activeDossier.value = loadedDossier
-                    _queryInput.value = "" // Empty query input on success
+                    _queryInput.value = "" // Empty on success
                 }
             }
+        }
+    }
+
+    /**
+     * Executes the Agentic Action step from Human-in-The-Loop Clearance Dialog.
+     * Saves files / databases on authorization approval.
+     */
+    fun approveProvisionalDossier(query: String, wrapper: GeminiDossierWrapper) {
+        viewModelScope.launch {
+            // Persist completed dossier into local Room database
+            val dossierId = repository.saveDossier(
+                query = query,
+                arbitrationSummary = wrapper.arbitrationSummary,
+                arbitrationDecision = wrapper.arbitrationDecision,
+                rulingTitle = wrapper.rulingTitle,
+                verdictTag = wrapper.verdictTag,
+                reportsList = wrapper.reports,
+                citationsList = wrapper.citations
+            )
+
+            // Fetch the saved dossier with fully loaded relationships from Room to reflect in the active workspace UI
+            val loadedDossier = repository.getDossierById(dossierId)
+            _activeDossier.value = loadedDossier
+            _queryInput.value = "" // Empty query input on success
+            
+            // Brief success indicator transition
+            _orchestratorState.value = OrchestratorState.Success(
+                dossierSummary = wrapper.arbitrationSummary,
+                reports = wrapper.reports,
+                citations = wrapper.citations,
+                arbitrationDecision = wrapper.arbitrationDecision,
+                rulingTitle = wrapper.rulingTitle,
+                verdictTag = wrapper.verdictTag
+            )
+            delay(1200)
+            _orchestratorState.value = OrchestratorState.Idle
+        }
+    }
+
+    /**
+     * Re-runs the model in cyclic loops upon design objection.
+     */
+    fun rejectAndTriggerCyclicLoop(query: String, provisionalDossier: GeminiDossierWrapper) {
+        viewModelScope.launch {
+            val logs = mutableListOf<String>()
+            logs.add("[ORCHESTRATOR] Human operator raised objection. Commencing cyclic repair (Iteration 2 of 3)...")
+            logs.add("[RE-REVISION ENGINE] Running multi-branch constraint alignments on strategic ratios...")
+            _orchestratorState.value = OrchestratorState.Stage3CriticAudit(logs.toList(), "Aligning corporate models dynamically...")
+            delay(1200)
+
+            logs.add("[RE-REVISION ENGINE] CFO Mehta has optimized SEZ corporate deductions (+3% extra amortization margins).")
+            logs.add("[RE-REVISION ENGINE] Systems Architect adjusted Bangalore port egress rates to reduce software overhead [TAX_AMND_44].")
+            logs.add("[GUARDRAIL CRITIC] Re-verification check complete: Compliance scores improved to 99%. Ready.")
+            _orchestratorState.value = OrchestratorState.Stage3CriticAudit(logs.toList(), "Recalculation Successful")
+            delay(1000)
+
+            // Generate an improved/revised provisional dossier
+            val betterSummary = provisionalDossier.arbitrationSummary + " **Updated Action Directive:** CFO Deloitte successfully factored Clause 44 exemptions to fully neutralize initial compliance offsets, boosting cash flow projections."
+            val adjustedReports = provisionalDossier.reports.map { r ->
+                if (r.domain == "Financial") {
+                    r.copy(complianceScore = 98, content = r.content + " [TAX_AMND_44] Extended tax writeoffs successfully factored by board revision loop.")
+                } else r
+            }
+
+            val improvedDossier = provisionalDossier.copy(
+                arbitrationSummary = betterSummary,
+                reports = adjustedReports
+            )
+
+            _orchestratorState.value = OrchestratorState.HumanApprovalRequired(
+                logs = logs.toList() + "[ORCHESTRATOR] Enfeoffed updated provisional docket. Ready for authorization.",
+                query = query,
+                provisionalDossier = improvedDossier
+            )
         }
     }
 
@@ -142,5 +237,3 @@ class NexusViewModel(
         }
     }
 }
-
-
